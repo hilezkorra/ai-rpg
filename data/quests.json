@@ -1,0 +1,18 @@
+﻿{
+  "active": [
+    {
+      "id": "q001",
+      "title": "Survive Day One",
+      "description": "The world ended overnight. Most of humanity is gone. Understand what happened and stay alive long enough to find out what comes next.",
+      "objectives": [
+        "Understand the System",
+        "Find food and water",
+        "Determine if anyone else is nearby",
+        "Avoid alien contact until you are ready"
+      ],
+      "status": "active",
+      "given_by": "System"
+    }
+  ],
+  "completed": []
+}

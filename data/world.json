@@ -1,0 +1,20 @@
+{
+  "day": 1,
+  "global_state": "Earth under alien invasion. 98% of humanity vanished into tutorial space. Streets empty. No communications. Alien structures visible over major cities.",
+  "active_threats": [
+    "Unknown alien faction — ship visible over Leipzig west district",
+    "Total civilian disappearance — cause unknown"
+  ],
+  "factions": [
+    "Humans (fragmented)",
+    "Unknown Alien Faction"
+  ],
+  "top_humans": [],
+  "top_factions": [],
+  "companion_system": {
+    "type": "demon",
+    "label": "Demon",
+    "description": "An inner demon that manifests after the player's first death. Born from their fears and failures. Not purely evil — it judges, teaches, and fights for dominance.",
+    "manifests": "on_first_death"
+  }
+}

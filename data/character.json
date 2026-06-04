@@ -1,0 +1,32 @@
+{
+  "name": "Unknown",
+  "level": 1,
+  "xp": 0,
+  "rank": "F",
+  "hp": 100,
+  "hp_max": 100,
+  "stats": {
+    "strength": 10,
+    "agility": 10,
+    "endurance": 10,
+    "intelligence": 10
+  },
+  "mental_state": {
+    "value": 0,
+    "status": "Stable"
+  },
+  "status_effects": [],
+  "inventory": [],
+  "location": {
+    "world": "Earth",
+    "city": "Unknown",
+    "place": "Unknown"
+  },
+  "demon": {
+    "status": "Dormant",
+    "influence": 0,
+    "relationship": "Not yet formed"
+  },
+  "abilities": [],
+  "class": "Unclassified"
+}

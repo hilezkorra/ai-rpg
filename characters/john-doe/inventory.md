@@ -1,0 +1,4 @@
+# INVENTORY
+
+- Phone
+- Clothes

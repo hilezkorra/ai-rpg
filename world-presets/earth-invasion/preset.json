@@ -1,0 +1,19 @@
+{
+  "id": "earth-invasion",
+  "name": "Earth Under Invasion",
+  "description": "98% of humanity vanished into a System-controlled tutorial space. The 2% who remain face three alien factions with conflicting agendas: the Vorath harvesters, the Shriven consciousness researchers, and the ancient Pale Court who built the System itself. Power grows through self-confrontation. Death births an inner demon. The System is doing something no one fully understands.",
+  "companion_system": {
+    "type": "demon",
+    "label": "Demon",
+    "description": "An inner demon that manifests after the player's first death. Born from their fears and failures. Not purely evil — it judges, teaches, and fights for dominance.",
+    "manifests": "on_first_death"
+  },
+  "starting_location": {
+    "world": "Earth",
+    "city": "Berlin",
+    "place": "Unknown"
+  },
+  "tone": "dark, grounded, psychological horror elements",
+  "themes": ["survival", "self-knowledge", "alien contact", "power through confrontation"],
+  "default": true
+}

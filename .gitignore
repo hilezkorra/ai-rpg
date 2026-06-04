@@ -1,0 +1,20 @@
+# Personal saves — don't commit real game progress
+saves/
+saves/**
+
+# Auto-snapshots
+saves/auto/
+
+# Composer/npm local deps if added later
+vendor/
+node_modules/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp
+*.swo

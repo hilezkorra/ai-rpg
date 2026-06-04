@@ -1,0 +1,14 @@
+{
+  "day": 1,
+  "global_state": "Unknown",
+  "active_threats": [],
+  "factions": [],
+  "top_humans": [],
+  "top_factions": [],
+  "companion_system": {
+    "type": "none",
+    "label": "Companion",
+    "description": "No companion system defined.",
+    "manifests": "never"
+  }
+}

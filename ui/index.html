@@ -1,0 +1,862 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI RPG</title>
+  <style>
+    :root {
+      --bg:#0a0c10; --surface:#10131a; --panel:#13161e; --border:#1e2330;
+      --border2:#262c3a; --accent:#4af0b0; --accent2:#7b5fff; --danger:#ff4f6a;
+      --warn:#f5a623; --text:#cdd6f4; --muted:#6c7086;
+      --player-bg:#1a2035; --player-brd:#2d3f6e; --gm-bg:#0f1319; --gm-brd:#1e2330;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    /* ─ Header ─ */
+    header{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);gap:12px}
+    header h1{font-size:14px;font-weight:700;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+    .hdr-actions{display:flex;gap:6px;align-items:center}
+    .hdr-btn{background:var(--panel);border:1px solid var(--border2);color:var(--text);font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;transition:border-color .2s,color .2s;white-space:nowrap}
+    .hdr-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+    .hdr-btn.save-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .hdr-btn.danger-btn:hover{border-color:var(--danger);color:var(--danger)}
+    .badges{display:flex;gap:6px;align-items:center;flex-shrink:0}
+    .badge{font-size:10px;color:var(--muted);background:var(--panel);padding:2px 8px;border-radius:20px;border:1px solid var(--border)}
+    .badge.live{color:var(--accent);border-color:var(--accent)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:5px;animation:pulse 2s ease-in-out infinite}
+    /* ─ Layout ─ */
+    .main{display:flex;flex:1;overflow:hidden}
+    /* ─ Left column ─ */
+    .hud-col{width:330px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden}
+    .tab-nav{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+    .tab-btn{flex:1;padding:8px 4px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .2s,border-color .2s}
+    .tab-btn:hover{color:var(--text)}
+    .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+    .tab-panes{flex:1;overflow-y:auto;padding:10px}
+    .tab-panes::-webkit-scrollbar{width:4px}
+    .tab-panes::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+    .tab-pane{display:none;flex-direction:column;gap:10px}
+    .tab-pane.active{display:flex}
+    /* ─ Panel ─ */
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px;flex-shrink:0}
+    .panel-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+    /* ─ Bars ─ */
+    .bar-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;margin-top:9px}
+    .bar-label span:first-child{color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .bar-label span:last-child{font-weight:600}
+    .bar-track{height:6px;background:#1a1d28;border-radius:3px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+    .bar-fill.hp{background:var(--accent)}
+    /* ─ Stats ─ */
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:10px}
+    .stat-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center}
+    .stat-box .sn{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .stat-box .sv{font-size:15px;font-weight:700}
+    .char-name{font-size:18px;font-weight:700;color:var(--accent);margin-bottom:1px}
+    .char-meta{font-size:11px;color:var(--muted);margin-bottom:2px}
+    .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+    .tag{font-size:10px;padding:2px 6px;border-radius:12px;border:1px solid;font-weight:600}
+    .tag.neutral{color:var(--muted);border-color:var(--border)}
+    .tag.warn{color:var(--warn);border-color:var(--warn)}
+    .tag.danger{color:var(--danger);border-color:var(--danger)}
+    .tag.good{color:var(--accent);border-color:var(--accent)}
+    .tag.quest{color:var(--accent2);border-color:var(--accent2)}
+    /* ─ Demon ─ */
+    .demon-row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+    .demon-orb{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,#2a0030,#0a0c10);border:2px solid #3d1a50;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:border-color .5s,box-shadow .5s}
+    .demon-orb.active{border-color:var(--danger);box-shadow:0 0 10px #ff4f6a44}
+    .demon-info .dn{font-weight:700;font-size:13px}
+    .demon-info .dr{font-size:11px;color:var(--muted)}
+    /* ─ World ─ */
+    .world-cards{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:9px}
+    .wcard{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 9px}
+    .wcard .wl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+    .wcard .wv{font-size:12px;font-weight:600;line-height:1.4}
+    .threat-list{list-style:none}
+    .threat-list li{padding:3px 0;border-bottom:1px solid var(--border);font-size:11px;display:flex;gap:6px;align-items:center}
+    .threat-list li:last-child{border-bottom:none}
+    .tdot{width:5px;height:5px;border-radius:50%;background:var(--danger);flex-shrink:0}
+    /* ─ Inventory ─ */
+    .inv-grid{display:flex;flex-wrap:wrap;gap:4px}
+    .inv-item{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:11px}
+    /* ─ LORE TAB ─ */
+    .lore-filter{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+    .filter-btn{font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;transition:all .15s}
+    .filter-btn:hover,.filter-btn.active{border-color:var(--accent2);color:var(--accent2)}
+    .lore-entry{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 11px;cursor:pointer;transition:border-color .2s}
+    .lore-entry:hover{border-color:var(--border2)}
+    .lore-entry.open{border-color:var(--accent2)}
+    .lore-title{font-size:12px;font-weight:700;margin-bottom:2px;display:flex;justify-content:space-between;align-items:center}
+    .lore-cat{font-size:10px;color:var(--accent2)}
+    .lore-day{font-size:10px;color:var(--muted)}
+    .lore-body{font-size:12px;color:var(--text);line-height:1.6;margin-top:7px;display:none;border-top:1px solid var(--border);padding-top:7px}
+    .lore-entry.open .lore-body{display:block}
+    /* ─ NPC TAB ─ */
+    .npc-card{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 11px}
+    .npc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+    .npc-name{font-size:13px;font-weight:700}
+    .npc-role{font-size:11px;color:var(--muted)}
+    .npc-desc{font-size:11px;color:var(--text);line-height:1.5;margin-bottom:5px}
+    .npc-footer{font-size:10px;color:var(--muted)}
+    .empty-state{text-align:center;padding:24px 12px;color:var(--muted);font-size:12px;line-height:1.6}
+    /* ─ QUESTS TAB ─ */
+    .quest-card{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 11px}
+    .quest-card.completed{opacity:.5}
+    .quest-title{font-size:13px;font-weight:700;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center}
+    .quest-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:7px}
+    .quest-obj{list-style:none;display:flex;flex-direction:column;gap:3px}
+    .quest-obj li{font-size:11px;display:flex;gap:6px;align-items:flex-start;color:var(--text)}
+    .quest-obj li::before{content:'○';color:var(--muted);flex-shrink:0}
+    .quest-obj li.done::before{content:'●';color:var(--accent)}
+    .quest-giver{font-size:10px;color:var(--muted);margin-top:6px}
+    .section-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:4px 0 6px}
+    /* ─ Chat ─ */
+    .chat-col{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:11px}
+    .chat-messages::-webkit-scrollbar{width:5px}
+    .chat-messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+    .msg{display:flex;flex-direction:column;max-width:88%}
+    .msg.player{align-self:flex-end;align-items:flex-end}
+    .msg.gamemaster{align-self:flex-start;align-items:flex-start}
+    .msg.system-msg{align-self:center;align-items:center;max-width:100%}
+    .msg-sender{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+    .msg.player .msg-sender{color:#5b8fff}
+    .msg.gamemaster .msg-sender{color:var(--accent)}
+    .msg.system-msg .msg-sender{color:var(--muted)}
+    .msg-bubble{padding:9px 13px;border-radius:9px;font-size:13px;line-height:1.65;word-break:break-word}
+    .msg.player .msg-bubble{background:var(--player-bg);border:1px solid var(--player-brd);border-bottom-right-radius:2px;color:#adc4ff;white-space:pre-wrap}
+    .msg.gamemaster .msg-bubble{background:var(--gm-bg);border:1px solid var(--gm-brd);border-bottom-left-radius:2px;color:var(--text)}
+    .msg.system-msg .msg-bubble{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:5px 12px;border-radius:20px}
+    .msg-bubble .choice-line{display:block;margin-top:3px;padding:3px 8px;border-left:2px solid var(--accent2);background:rgba(123,95,255,.08);border-radius:0 4px 4px 0;font-size:12px}
+    .msg-bubble code{background:#1a1d28;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;color:var(--accent)}
+    .msg-time{font-size:10px;color:var(--muted);margin-top:2px}
+    .typing-indicator{align-self:flex-start;padding:9px 14px;background:var(--gm-bg);border:1px solid var(--gm-brd);border-radius:9px;border-bottom-left-radius:2px;display:flex;gap:5px;align-items:center}
+    .typing-indicator span{display:inline-block;width:6px;height:6px;background:var(--muted);border-radius:50%;animation:tbounce .9s ease-in-out infinite}
+    .typing-indicator span:nth-child(2){animation-delay:.15s}
+    .typing-indicator span:nth-child(3){animation-delay:.3s}
+    @keyframes tbounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+    /* ─ Input ─ */
+    .chat-input-area{padding:10px 14px;border-top:1px solid var(--border);background:var(--surface);display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
+    .chat-input-area textarea{flex:1;background:var(--panel);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;padding:9px 11px;resize:none;outline:none;min-height:40px;max-height:110px;line-height:1.5;transition:border-color .2s}
+    .chat-input-area textarea:focus{border-color:var(--accent2)}
+    .chat-input-area textarea:disabled{opacity:.4;cursor:not-allowed}
+    .chat-input-area textarea::placeholder{color:var(--muted)}
+    .send-btn{width:40px;height:40px;background:var(--accent2);border:none;border-radius:8px;color:white;font-size:15px;cursor:pointer;transition:background .2s,opacity .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .send-btn:hover:not(:disabled){background:#9178ff}
+    .send-btn:disabled{opacity:.3;cursor:not-allowed}
+    .waiting-label{font-size:11px;color:var(--muted);padding:3px 0 0;display:none}
+    .waiting-label.show{display:block}
+    /* ─ Event log ─ */
+    .eventlog-row{border-top:1px solid var(--border);padding:0 14px;max-height:100px;overflow-y:auto;flex-shrink:0;background:var(--surface)}
+    .eventlog-row::-webkit-scrollbar{width:4px}
+    .eventlog-header{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:6px 0 5px;position:sticky;top:0;background:var(--surface)}
+    .ev-list{list-style:none;padding-bottom:6px}
+    .ev-list li{display:grid;grid-template-columns:130px 1fr;gap:8px;padding:2px 0;font-size:11px;border-bottom:1px solid var(--border)}
+    .ev-list li:last-child{border-bottom:none}
+    .ev-time{color:var(--accent);font-size:10px;font-weight:600;padding-top:1px}
+    /* ─ Modals ─ */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+    .modal-box::-webkit-scrollbar{width:4px}
+    .modal-box::-webkit-scrollbar-thumb{background:var(--border2)}
+    .modal-title{font-size:15px;font-weight:700;color:var(--text)}
+    .modal-subtitle{font-size:12px;color:var(--muted);margin-top:-10px}
+    .form-group{display:flex;flex-direction:column;gap:5px}
+    .form-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .form-input{background:var(--panel);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:13px;font-family:inherit;padding:9px 11px;outline:none;transition:border-color .2s;width:100%}
+    .form-input:focus{border-color:var(--accent2)}
+    .form-textarea{resize:vertical;min-height:90px;max-height:180px}
+    .radio-group{display:flex;flex-direction:column;gap:7px}
+    .radio-opt{display:flex;align-items:flex-start;gap:9px;cursor:pointer;padding:8px 10px;border-radius:7px;border:1px solid var(--border);transition:border-color .2s}
+    .radio-opt:hover{border-color:var(--border2)}
+    .radio-opt.selected{border-color:var(--accent2)}
+    .radio-opt input[type=radio]{margin-top:2px;accent-color:var(--accent2);flex-shrink:0}
+    .radio-opt-text .ropt-label{font-size:12px;font-weight:600}
+    .radio-opt-text .ropt-desc{font-size:11px;color:var(--muted)}
+    .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+    .btn{padding:7px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:opacity .2s}
+    .btn:hover{opacity:.85}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .btn-primary{background:var(--accent2);color:white}
+    .btn-danger{background:var(--danger);color:white}
+    .btn-ghost{background:var(--panel);color:var(--text);border:1px solid var(--border2)}
+    .save-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto}
+    .save-list::-webkit-scrollbar{width:4px}
+    .save-item{padding:9px 11px;background:var(--panel);border:1px solid var(--border);border-radius:7px;cursor:pointer;transition:border-color .2s}
+    .save-item:hover{border-color:var(--accent2)}
+    .save-item.selected{border-color:var(--accent2);background:rgba(123,95,255,.07)}
+    .save-item-name{font-size:12px;font-weight:700}
+    .save-item-meta{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+    .wizard-step{display:none;flex-direction:column;gap:14px}
+    .wizard-step.active{display:flex}
+    .wizard-indicator{display:flex;gap:5px;justify-content:center}
+    .wdot{width:6px;height:6px;border-radius:50%;background:var(--border2)}
+    .wdot.active{background:var(--accent2)}
+    .world-create-fields{display:none;flex-direction:column;gap:12px;margin-top:4px}
+    .world-create-fields.show{display:flex}
+    /* ─ Global code tag ─ */
+    code{background:#1a1d28;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;color:var(--accent)}
+    /* ─ Typewriter ─ */
+    .tw-cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:1px;vertical-align:text-bottom;animation:twblink .55s ease-in-out infinite}
+    @keyframes twblink{0%,100%{opacity:1}50%{opacity:0}}
+    /* ─ INFO TAB ─ */
+    .info-section{display:flex;flex-direction:column;gap:0}
+    .info-step{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.5;color:var(--text)}
+    .info-step:last-child{border-bottom:none}
+    .step-num{width:18px;height:18px;min-width:18px;border-radius:50%;background:var(--accent2);color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+    .cmd-list{display:flex;flex-direction:column;gap:0}
+    .cmd-item{padding:6px 0;border-bottom:1px solid var(--border)}
+    .cmd-item:last-child{border-bottom:none}
+    .cmd-name{display:inline-block;background:var(--bg);color:var(--accent);font-family:monospace;font-size:11px;padding:1px 6px;border-radius:3px;border:1px solid var(--border);margin-bottom:3px}
+    .cmd-desc{font-size:11px;color:var(--muted);line-height:1.4}
+    .tip-list{display:flex;flex-direction:column;gap:5px}
+    .tip-item{font-size:11px;color:var(--text);line-height:1.5;padding-left:10px;position:relative}
+    .tip-item::before{content:'›';position:absolute;left:0;color:var(--accent2)}
+    @media(max-width:720px){.hud-col{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:40vh}.main{flex-direction:column}}
+  </style>
+</head>
+<body>
+<header>
+  <h1><span class="dot"></span>AI RPG</h1>
+  <div class="hdr-actions">
+    <button class="hdr-btn save-btn" onclick="openModal('save')">💾 Save</button>
+    <button class="hdr-btn" onclick="openModal('load')">📂 Load</button>
+    <button class="hdr-btn danger-btn" onclick="openModal('newgame')">✦ New Game</button>
+    <button class="hdr-btn" id="voice-btn" onclick="toggleVoice()" title="Toggle voice narration">🔇 Voice</button>
+  </div>
+  <div class="badges">
+    <span class="badge live" id="gm-status">GM Offline</span>
+    <span class="badge" id="last-update">Connecting…</span>
+  </div>
+</header>
+<div class="main">
+  <!-- ── Left column ── -->
+  <div class="hud-col">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('stats')">STATS</button>
+      <button class="tab-btn" onclick="switchTab('lore')">LORE</button>
+      <button class="tab-btn" onclick="switchTab('chars')">CHARS</button>
+      <button class="tab-btn" onclick="switchTab('quests')">QUESTS</button>
+      <button class="tab-btn" onclick="switchTab('info')">INFO</button>
+    </div>
+    <div class="tab-panes">
+      <!-- STATS TAB -->
+      <div class="tab-pane active" id="tab-stats">
+        <div class="panel"><div class="panel-title">Character</div><div id="char-body"><div style="color:var(--muted);font-size:12px">Loading…</div></div></div>
+        <div class="panel" id="panel-companion"><div class="panel-title" id="companion-panel-title">Companion</div><div id="demon-body"><div style="color:var(--muted);font-size:12px">Loading…</div></div></div>
+        <div class="panel"><div class="panel-title">World State</div><div id="world-body"><div style="color:var(--muted);font-size:12px">Loading…</div></div></div>
+        <div class="panel"><div class="panel-title">Inventory</div><div id="inv-body"><div style="color:var(--muted);font-size:12px">Loading…</div></div></div>
+      </div>
+      <!-- LORE TAB -->
+      <div class="tab-pane" id="tab-lore">
+        <div class="lore-filter" id="lore-filter"></div>
+        <div id="lore-list"><div class="empty-state">No lore discovered yet.</div></div>
+      </div>
+      <!-- CHARS TAB -->
+      <div class="tab-pane" id="tab-chars">
+        <div id="npcs-list"><div class="empty-state">No characters met yet.<br><span style="font-size:11px">Characters you encounter will appear here.</span></div></div>
+      </div>
+      <!-- QUESTS TAB -->
+      <div class="tab-pane" id="tab-quests">
+        <div id="quests-list"><div class="empty-state">No active quests.</div></div>
+      </div>
+      <!-- INFO TAB -->
+      <div class="tab-pane" id="tab-info">
+        <div class="panel">
+          <div class="panel-title">Setup</div>
+          <div class="info-section">
+            <div class="info-step"><div class="step-num">1</div><div>Open <strong>Claude Code</strong> in the <code>AI RPG</code> project directory</div></div>
+            <div class="info-step"><div class="step-num">2</div><div>Make sure <strong>Laragon</strong> is running (PHP at <code>localhost</code>)</div></div>
+            <div class="info-step"><div class="step-num">3</div><div>Type <code>play rpg</code> in Claude Code to start the Game Master loop</div></div>
+            <div class="info-step"><div class="step-num">4</div><div>Type your actions below and press <strong>Enter</strong> to send</div></div>
+            <div class="info-step"><div class="step-num">5</div><div>If the GM stops responding, type <code>play rpg</code> again in Claude Code</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">GM Commands</div>
+          <div class="cmd-list">
+            <div class="cmd-item"><span class="cmd-name">/new-game</span><div class="cmd-desc">Start fresh — opens world &amp; character wizard</div></div>
+            <div class="cmd-item"><span class="cmd-name">/save-game [name]</span><div class="cmd-desc">Save current progress to a named slot</div></div>
+            <div class="cmd-item"><span class="cmd-name">/load-game [path]</span><div class="cmd-desc">Restore a save with a narrative recap</div></div>
+            <div class="cmd-item"><span class="cmd-name">/save-world [name]</span><div class="cmd-desc">Save world/lore/factions as a reusable preset</div></div>
+            <div class="cmd-item"><span class="cmd-name">/list-saves</span><div class="cmd-desc">Show all available save slots</div></div>
+            <div class="cmd-item"><span class="cmd-name">/rewind</span><div class="cmd-desc">Restore last auto-snapshot (every 5 turns)</div></div>
+            <div class="cmd-item"><span class="cmd-name">/force-event [desc]</span><div class="cmd-desc">Inject a world event immediately</div></div>
+            <div class="cmd-item"><span class="cmd-name">/spawn [name] [role]</span><div class="cmd-desc">Add an NPC to the current scene</div></div>
+            <div class="cmd-item"><span class="cmd-name">/set-stat [stat] [value]</span><div class="cmd-desc">Override a character stat directly</div></div>
+            <div class="cmd-item"><span class="cmd-name">/set-mental [value]</span><div class="cmd-desc">Set mental state 0–100 (100 triggers takeover)</div></div>
+            <div class="cmd-item"><span class="cmd-name">/simulate [scenario]</span><div class="cmd-desc">Test a scenario without writing to files</div></div>
+            <div class="cmd-item"><span class="cmd-name">/reveal [lore-id]</span><div class="cmd-desc">Reveal hidden lore (e.g. <code>lore_005</code>)</div></div>
+            <div class="cmd-item"><span class="cmd-name">/faction-event [faction] [event]</span><div class="cmd-desc">Trigger a faction-level change</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Tips</div>
+          <div class="tip-list">
+            <div class="tip-item"><strong>Enter</strong> to send · <strong>Shift+Enter</strong> for a new line</div>
+            <div class="tip-item">Click a GM message <strong>while it's typing</strong> to skip to the end instantly</div>
+            <div class="tip-item">Toggle <strong>Voice</strong> in the header to hear GM narration read aloud</div>
+            <div class="tip-item">The GM loop is self-sustaining — it reschedules itself every 8 seconds</div>
+            <div class="tip-item">Auto-snapshots every 5 turns — <code>/rewind</code> to restore the last one</div>
+            <div class="tip-item">Saves live in <code>AI RPG\saves\</code> · Presets in <code>AI RPG\world-presets\</code></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ── Chat ── -->
+  <div class="chat-col">
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg system-msg"><div class="msg-bubble">Connecting to game…</div></div>
+    </div>
+    <div class="chat-input-area">
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+        <textarea id="chat-input" placeholder="Type your action or command…" rows="1" disabled></textarea>
+        <div class="waiting-label" id="waiting-label">⏳ Game Master is responding…</div>
+      </div>
+      <button class="send-btn" id="send-btn" disabled title="Send">➤</button>
+    </div>
+  </div>
+</div>
+<!-- Event log -->
+<div class="eventlog-row">
+  <div class="eventlog-header">Event Log</div>
+  <ul class="ev-list" id="ev-list"><li><span class="ev-time">–</span><span>No events yet</span></li></ul>
+</div>
+<!-- ── SAVE MODAL ── -->
+<div class="modal-overlay" id="modal-save">
+  <div class="modal-box">
+    <div class="modal-title">💾 Save Game</div>
+    <div class="form-group">
+      <label class="form-label">Save Name</label>
+      <input id="save-name-input" class="form-input" type="text" placeholder="e.g. before-berlin-raid" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('save')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitSave()">Save Game</button>
+    </div>
+  </div>
+</div>
+<!-- ── LOAD MODAL ── -->
+<div class="modal-overlay" id="modal-load">
+  <div class="modal-box">
+    <div class="modal-title">📂 Load Game</div>
+    <div class="modal-subtitle">Select a save to restore</div>
+    <div class="save-list" id="save-list"><div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Loading saves…</div></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('load')">Cancel</button>
+      <button class="btn btn-primary" id="load-confirm-btn" disabled onclick="submitLoad()">Load Selected</button>
+    </div>
+  </div>
+</div>
+<!-- ── NEW GAME MODAL ── -->
+<div class="modal-overlay" id="modal-newgame">
+  <div class="modal-box">
+    <div class="modal-title">✦ New Game</div>
+    <div class="wizard-indicator"><div class="wdot active" id="wdot-0"></div><div class="wdot" id="wdot-1"></div><div class="wdot" id="wdot-2"></div></div>
+    <!-- Step 0: World -->
+    <div class="wizard-step active" id="wstep-0">
+      <div style="font-size:13px;font-weight:600">Choose World</div>
+      <div class="radio-group" id="world-choice-group">
+        <label class="radio-opt selected">
+          <input type="radio" name="world-choice" value="existing" checked onchange="onWorldChoiceChange(this)">
+          <div class="radio-opt-text"><div class="ropt-label">Use existing world preset</div><div class="ropt-desc">Pick from saved world setups</div></div>
+        </label>
+        <label class="radio-opt">
+          <input type="radio" name="world-choice" value="new" onchange="onWorldChoiceChange(this)">
+          <div class="radio-opt-text"><div class="ropt-label">Create a new world</div><div class="ropt-desc">Describe your own setting</div></div>
+        </label>
+      </div>
+      <!-- Existing world: preset select -->
+      <div id="world-preset-fields" class="form-group">
+        <label class="form-label">World Preset</label>
+        <select id="world-preset-select" class="form-input"><option value="earth-invasion">Loading…</option></select>
+      </div>
+      <!-- New world fields -->
+      <div class="world-create-fields" id="world-create-fields">
+        <div class="form-group">
+          <label class="form-label">Describe your world</label>
+          <textarea id="world-summary-input" class="form-input form-textarea" placeholder="Describe the setting, tone, key events, or lore. The GM will use this to build the world."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">World Generation Mode</label>
+          <div class="radio-group">
+            <label class="radio-opt selected"><input type="radio" name="gen-mode" value="questions" checked onchange="radioStyle(this)"><div class="radio-opt-text"><div class="ropt-label">Ask me questions</div><div class="ropt-desc">The GM will interview you to flesh out the world</div></div></label>
+            <label class="radio-opt"><input type="radio" name="gen-mode" value="auto" onchange="radioStyle(this)"><div class="radio-opt-text"><div class="ropt-label">Auto-generate</div><div class="ropt-desc">The GM generates details from your summary</div></div></label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('newgame')">Cancel</button>
+        <button class="btn btn-primary" onclick="wizardNext()">Next →</button>
+      </div>
+    </div>
+    <!-- Step 1: Character -->
+    <div class="wizard-step" id="wstep-1">
+      <div style="font-size:13px;font-weight:600">Main Character</div>
+      <div class="radio-group">
+        <label class="radio-opt selected"><input type="radio" name="char-mode" value="manual" checked onchange="radioStyle(this)"><div class="radio-opt-text"><div class="ropt-label">Set up during gameplay</div><div class="ropt-desc">The GM will ask you character creation questions in chat</div></div></label>
+        <label class="radio-opt"><input type="radio" name="char-mode" value="random" onchange="radioStyle(this)"><div class="radio-opt-text"><div class="ropt-label">Auto-generate character</div><div class="ropt-desc">The GM creates a character from the world context</div></div></label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="wizardBack()">← Back</button>
+        <button class="btn btn-primary" onclick="wizardNext()">Next →</button>
+      </div>
+    </div>
+    <!-- Step 2: Confirm -->
+    <div class="wizard-step" id="wstep-2">
+      <div style="font-size:13px;font-weight:600">Ready to Start</div>
+      <div id="newgame-summary" style="font-size:12px;color:var(--muted);background:var(--panel);padding:10px 12px;border-radius:7px;border:1px solid var(--border);line-height:1.7"></div>
+      <div style="font-size:11px;color:var(--warn)">⚠ The current game will be auto-saved before starting.</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="wizardBack()">← Back</button>
+        <button class="btn btn-danger" onclick="submitNewGame()">Start New Game</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const BASE = '../data/';
+const API  = '../game-api.php';
+const POST = '../post-message.php';
+
+// ─ State ─────────────────────────────────────────────────
+let lastMsgCount = 0, lastStatus = null, chatSessionId = null, typingEl = null;
+let activeFilter = 'all', openLoreId = null, selectedSave = null, wizardStep = 0;
+let isAnimating = false, hasRenderedOnce = false, voiceEnabled = false;
+
+// ─ Helpers ───────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const mentalColor = v => v < 40 ? 'var(--accent)' : v < 70 ? 'var(--warn)' : 'var(--danger)';
+const mentalLabel = v => ['BERSERK','Breaking','Fractured','Strained','Unsettled','Calm'].find((_,i) => [100,80,60,40,20,0][i] <= v) || 'Calm';
+const fmtTime = iso => { try { return new Date(iso).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); } catch { return ''; } };
+
+async function fetchJ(path) {
+  const r = await fetch(path + '?t=' + Date.now());
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+async function apiPost(action, body) {
+  const r = await fetch(API + '?action=' + action, {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+// ─ Tab switching ─────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['stats','lore','chars','quests','info'][i] === name);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const pane = $('tab-' + name);
+  if (pane) pane.classList.add('active');
+}
+
+// ─ HUD Renders ───────────────────────────────────────────
+function renderChar(c) {
+  const hpPct = Math.max(0, Math.min(100, (c.hp / c.hp_max) * 100));
+  const mPct  = Math.max(0, Math.min(100, c.mental_state.value));
+  const mCol  = mentalColor(c.mental_state.value);
+  const efx   = (c.status_effects||[]).length
+    ? c.status_effects.map(e => '<span class="tag warn">' + e + '</span>').join('')
+    : '<span class="tag neutral">None</span>';
+  $('char-body').innerHTML =
+    '<div class="char-name">' + c.name + '</div>' +
+    '<div class="char-meta">Lv ' + c.level + ' &nbsp;·&nbsp; ' + c.xp + ' XP &nbsp;·&nbsp; ' + c.location.city + ', ' + c.location.place + '</div>' +
+    '<div class="bar-label"><span>HP</span><span>' + c.hp + ' / ' + c.hp_max + '</span></div>' +
+    '<div class="bar-track"><div class="bar-fill hp" style="width:' + hpPct + '%"></div></div>' +
+    '<div class="bar-label"><span>Mental</span><span style="color:' + mCol + '">' + c.mental_state.value + '/100 — ' + mentalLabel(c.mental_state.value) + '</span></div>' +
+    '<div class="bar-track"><div class="bar-fill" style="width:' + mPct + '%;background:' + mCol + '"></div></div>' +
+    '<div class="stats-grid">' +
+    '<div class="stat-box"><span class="sn">STR</span><span class="sv">' + c.stats.strength + '</span></div>' +
+    '<div class="stat-box"><span class="sn">AGI</span><span class="sv">' + c.stats.agility + '</span></div>' +
+    '<div class="stat-box"><span class="sn">END</span><span class="sv">' + c.stats.endurance + '</span></div>' +
+    '<div class="stat-box"><span class="sn">INT</span><span class="sv">' + c.stats.intelligence + '</span></div>' +
+    '</div><div style="margin-top:8px"><div class="tags">' + efx + '</div></div>';
+}
+function renderDemon(c, w) {
+  const cs = (w && w.companion_system) || { type: 'demon', label: 'Demon' };
+  const panel = $('panel-companion');
+  if (cs.type === 'none') { if (panel) panel.style.display = 'none'; return; }
+  if (panel) panel.style.display = '';
+  const title = $('companion-panel-title');
+  if (title) title.textContent = cs.label || 'Companion';
+  const d = c.demon;
+  const iPct = Math.max(0, Math.min(100, d.influence));
+  const dormantLabel = cs.type === 'demon' ? 'Dormant' : cs.type === 'spirit' ? 'Unbound' : 'Inactive';
+  const icons = { demon: '👁', spirit: '✦', guide: '◈', default: '◉' };
+  const icon = icons[cs.type] || icons.default;
+  $('demon-body').innerHTML =
+    '<div class="demon-row">' +
+    '<div class="demon-orb ' + (d.status !== dormantLabel && d.status !== 'Dormant' ? 'active' : '') + '">' + icon + '</div>' +
+    '<div class="demon-info"><div class="dn">' + d.status + '</div><div class="dr">' + d.relationship + '</div></div>' +
+    '</div>' +
+    '<div class="bar-label"><span>Influence</span><span>' + d.influence + '/100</span></div>' +
+    '<div class="bar-track"><div class="bar-fill" style="width:' + iPct + '%;background:linear-gradient(90deg,#7b5fff,#ff4f6a)"></div></div>' +
+    (cs.description ? '<div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.5">' + cs.description + '</div>' : '');
+}
+function renderWorld(w) {
+  const threats = (w.active_threats||[]).length
+    ? w.active_threats.map(t => '<li><span class="tdot"></span>' + t + '</li>').join('')
+    : '<li><span class="tdot" style="background:var(--muted)"></span>None detected</li>';
+  $('world-body').innerHTML =
+    '<div class="world-cards">' +
+    '<div class="wcard"><div class="wl">Day</div><div class="wv">Day ' + w.day + '</div></div>' +
+    '<div class="wcard"><div class="wl">Factions</div><div class="wv" style="font-size:10px">' + ((w.factions||[]).join(', ')||'?') + '</div></div>' +
+    '<div class="wcard" style="grid-column:1/-1"><div class="wl">Status</div><div class="wv" style="font-size:11px;line-height:1.5">' + w.global_state + '</div></div>' +
+    '</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Threats</div>' +
+    '<ul class="threat-list">' + threats + '</ul>';
+}
+function renderInv(c) {
+  const items = c.inventory || [];
+  $('inv-body').innerHTML = items.length
+    ? '<div class="inv-grid">' + items.map(i => '<div class="inv-item">' + i + '</div>').join('') + '</div>'
+    : '<div style="color:var(--muted);font-size:12px">Empty</div>';
+}
+function renderEvents(e) {
+  const evs = (e.recent_events||[]).slice(-10).reverse();
+  $('ev-list').innerHTML = evs.length
+    ? evs.map(ev => '<li><span class="ev-time">' + ev.time + '</span><span>' + ev.event + '</span></li>').join('')
+    : '<li><span class="ev-time">–</span><span style="color:var(--muted)">No events</span></li>';
+}
+
+// ─ Lore Render ───────────────────────────────────────────
+function renderLore(data) {
+  const entries = (data.entries || []).filter(e => e.discovered && e.discovered !== false);
+  if (!entries.length) { $('lore-list').innerHTML = '<div class="empty-state">No lore discovered yet.</div>'; $('lore-filter').innerHTML = ''; return; }
+  const cats = ['all', ...new Set(entries.map(e => e.category))];
+  $('lore-filter').innerHTML = cats.map(c =>
+    '<button class="filter-btn' + (activeFilter === c ? ' active' : '') + '" onclick="setLoreFilter(\'' + c + '\')">' + c + '</button>'
+  ).join('');
+  const filtered = activeFilter === 'all' ? entries : entries.filter(e => e.category === activeFilter);
+  $('lore-list').innerHTML = filtered.map(e =>
+    '<div class="lore-entry' + (openLoreId === e.id ? ' open' : '') + '" onclick="toggleLore(\'' + e.id + '\')">' +
+    '<div class="lore-title"><span>' + e.title + '</span><span class="lore-cat">' + e.category + '</span></div>' +
+    '<div class="lore-body">' + e.content + '</div>' +
+    '</div>'
+  ).join('') || '<div class="empty-state">No entries in this category.</div>';
+}
+function setLoreFilter(cat) { activeFilter = cat; renderLoreFromCache(); }
+function toggleLore(id) { openLoreId = openLoreId === id ? null : id; renderLoreFromCache(); }
+let loreCache = null;
+function renderLoreFromCache() { if (loreCache) renderLore(loreCache); }
+
+// ─ NPC Render ────────────────────────────────────────────
+function renderNPCs(data) {
+  const chars = data.characters || [];
+  if (!chars.length) {
+    $('npcs-list').innerHTML = '<div class="empty-state">No characters met yet.<br><span style="font-size:11px">Characters you encounter will appear here.</span></div>';
+    return;
+  }
+  const relColor = r => ({Ally:'var(--accent)',Hostile:'var(--danger)',Neutral:'var(--muted)',Wary:'var(--warn)'})[r] || 'var(--muted)';
+  $('npcs-list').innerHTML = chars.map(c =>
+    '<div class="npc-card">' +
+    '<div class="npc-header"><div><div class="npc-name">' + c.name + '</div><div class="npc-role">' + c.role + '</div></div>' +
+    '<span class="tag" style="color:' + relColor(c.relationship) + ';border-color:' + relColor(c.relationship) + '">' + c.relationship + '</span></div>' +
+    '<div class="npc-desc">' + c.description + '</div>' +
+    '<div class="npc-footer">Last seen: ' + c.last_seen + (c.notes ? ' · ' + c.notes : '') + '</div>' +
+    '</div>'
+  ).join('');
+}
+
+// ─ Quest Render ──────────────────────────────────────────
+function renderQuests(data) {
+  const active = data.active || [];
+  const done   = data.completed || [];
+  if (!active.length && !done.length) { $('quests-list').innerHTML = '<div class="empty-state">No quests yet.</div>'; return; }
+  let html = '';
+  if (active.length) {
+    html += '<div class="section-label">Active</div>';
+    html += active.map(q =>
+      '<div class="quest-card">' +
+      '<div class="quest-title"><span>' + q.title + '</span><span class="tag quest">Active</span></div>' +
+      '<div class="quest-desc">' + q.description + '</div>' +
+      '<ul class="quest-obj">' + (q.objectives||[]).map(o => {
+        const text = typeof o === 'string' ? o : (o.text || '');
+        const isDone = typeof o === 'object' && o.complete;
+        return '<li' + (isDone ? ' class="done"' : '') + '>' + text + '</li>';
+      }).join('') + '</ul>' +
+      '<div class="quest-giver">Given by: ' + (q.given_by || 'Unknown') + '</div>' +
+      '</div>'
+    ).join('');
+  }
+  if (done.length) {
+    html += '<div class="section-label" style="margin-top:8px">Completed</div>';
+    html += done.map(q =>
+      '<div class="quest-card completed">' +
+      '<div class="quest-title"><span>' + q.title + '</span><span class="tag good">Done</span></div>' +
+      '<div class="quest-desc">' + q.description + '</div>' +
+      '</div>'
+    ).join('');
+  }
+  $('quests-list').innerHTML = html;
+}
+
+// ─ Typewriter ─────────────────────────────────────────────
+function renderGMTextInto(raw, container) {
+  raw.split('\n').forEach(line => {
+    if (/^\s*\d+[\.\)]\s/.test(line)) {
+      const s = document.createElement('span'); s.className = 'choice-line';
+      s.textContent = line.trim(); container.appendChild(s);
+    } else if (line.trim().startsWith('`') && line.trim().endsWith('`') && line.trim().length > 2) {
+      const w = document.createElement('div'); w.style.cssText = 'margin:3px 0';
+      const c = document.createElement('code'); c.textContent = line.trim().slice(1,-1);
+      w.appendChild(c); container.appendChild(w);
+    } else {
+      const s = document.createElement('span'); s.style.whiteSpace = 'pre-wrap';
+      s.innerHTML = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') + '\n';
+      container.appendChild(s);
+    }
+  });
+}
+
+function typewriterAnimate(bubble, text) {
+  isAnimating = true;
+  const speed = text.length > 800 ? 6 : text.length > 400 ? 10 : 16;
+  let i = 0;
+  const textNode = document.createElement('span');
+  textNode.style.whiteSpace = 'pre-wrap';
+  const cursor = document.createElement('span');
+  cursor.className = 'tw-cursor';
+  bubble.appendChild(textNode);
+  bubble.appendChild(cursor);
+  const msgList = $('chat-messages');
+
+  function finish() {
+    cursor.remove();
+    bubble.innerHTML = '';
+    renderGMTextInto(text, bubble);
+    bubble.style.cursor = '';
+    bubble.title = '';
+    isAnimating = false;
+    if (msgList) msgList.scrollTop = msgList.scrollHeight;
+  }
+
+  bubble.style.cursor = 'pointer';
+  bubble.title = 'Click to skip animation';
+  bubble.addEventListener('click', () => { clearInterval(timer); finish(); }, { once: true });
+
+  const timer = setInterval(() => {
+    if (i < text.length) {
+      textNode.textContent += text[i++];
+      if (msgList) msgList.scrollTop = msgList.scrollHeight;
+    } else {
+      clearInterval(timer);
+      finish();
+    }
+  }, speed);
+}
+
+// ─ Voice ─────────────────────────────────────────────────
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  const btn = $('voice-btn');
+  if (btn) {
+    btn.textContent = voiceEnabled ? '🔊 Voice' : '🔇 Voice';
+    btn.style.color = voiceEnabled ? 'var(--accent)' : '';
+    btn.style.borderColor = voiceEnabled ? 'var(--accent)' : '';
+  }
+  if (!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+function speakText(text) {
+  if (!voiceEnabled || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const clean = text.replace(/\*\*(.+?)\*\*/g,'$1').replace(/`(.+?)`/g,'$1').replace(/[#_]/g,'');
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.rate = 0.88; utter.pitch = 0.85;
+  window.speechSynthesis.speak(utter);
+}
+
+// ─ Chat Render ───────────────────────────────────────────
+function renderMessages(messages, status) {
+  const container = $('chat-messages');
+  const count = messages.length;
+  if (count < lastMsgCount) { container.innerHTML = ''; lastMsgCount = 0; isAnimating = false; }
+  if (isAnimating) return;
+  if (count === lastMsgCount && status === lastStatus) { hasRenderedOnce = true; return; }
+
+  for (let i = lastMsgCount; i < count; i++) {
+    const m = messages[i];
+    removeTyping();
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ' + (m.sender === 'player' ? 'player' : 'gamemaster');
+    const sender = document.createElement('div'); sender.className = 'msg-sender';
+    sender.textContent = m.sender === 'player' ? 'You' : 'Game Master';
+    wrap.appendChild(sender);
+    const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
+    const t = document.createElement('div'); t.className = 'msg-time'; t.textContent = fmtTime(m.timestamp);
+
+    // Animate only brand-new GM messages (not historical ones on page load)
+    if (m.sender === 'gamemaster' && i === count - 1 && hasRenderedOnce) {
+      wrap.appendChild(bubble); wrap.appendChild(t); container.appendChild(wrap);
+      lastMsgCount = count; lastStatus = status;
+      speakText(m.content);
+      typewriterAnimate(bubble, m.content);
+      container.scrollTop = container.scrollHeight;
+      return;
+    }
+
+    if (m.sender === 'gamemaster') renderGMTextInto(m.content, bubble);
+    else bubble.textContent = m.content;
+    wrap.appendChild(bubble); wrap.appendChild(t); container.appendChild(wrap);
+  }
+
+  if (status === 'waiting_for_gm' && count > 0 && messages[count-1].sender === 'player') showTyping(container);
+  else removeTyping();
+  lastMsgCount = count; lastStatus = status; hasRenderedOnce = true;
+  container.scrollTop = container.scrollHeight;
+}
+function showTyping(c) { if (typingEl) return; typingEl = document.createElement('div'); typingEl.id = 'typing-indicator'; typingEl.className = 'typing-indicator'; typingEl.innerHTML = '<span></span><span></span><span></span>'; c.appendChild(typingEl); c.scrollTop = c.scrollHeight; }
+function removeTyping() { const e = $('typing-indicator'); if (e) { e.remove(); typingEl = null; } }
+function setInputLocked(l) { const locked = l || isAnimating; $('chat-input').disabled = locked; $('send-btn').disabled = locked; $('waiting-label').classList.toggle('show', locked); if (!locked) $('chat-input').focus(); }
+function setGMStatus(online) { const b = $('gm-status'); b.textContent = online ? 'GM Online' : 'GM Offline'; b.style.color = online ? 'var(--accent)' : 'var(--warn)'; }
+
+// ─ Main refresh ──────────────────────────────────────────
+async function refresh() {
+  try {
+    const [char, world, events, chat, npcs, lore, quests] = await Promise.all([
+      fetchJ(BASE + 'character.json'), fetchJ(BASE + 'world.json'),
+      fetchJ(BASE + 'events.json'), fetchJ(BASE + 'chat.json'),
+      fetchJ(BASE + 'npcs.json'), fetchJ(BASE + 'lore.json'), fetchJ(BASE + 'quests.json'),
+    ]);
+    renderChar(char); renderDemon(char, world); renderInv(char); renderWorld(world); renderEvents(events);
+    loreCache = lore; renderLoreFromCache(); renderNPCs(npcs); renderQuests(quests);
+    if (chatSessionId && chat.session_id !== chatSessionId) { lastMsgCount = 0; lastStatus = null; isAnimating = false; hasRenderedOnce = false; }
+    chatSessionId = chat.session_id;
+    renderMessages(chat.messages || [], chat.status);
+    setInputLocked(chat.status !== 'waiting_for_player');
+    const lastGM = (chat.messages||[]).filter(m => m.sender === 'gamemaster').pop();
+    setGMStatus(lastGM && (Date.now() - new Date(lastGM.timestamp).getTime() < 5*60*1000));
+    $('last-update').textContent = new Date().toLocaleTimeString();
+  } catch(e) { $('last-update').textContent = 'Error – retrying'; }
+}
+
+// ─ Send message ──────────────────────────────────────────
+async function sendMessage() {
+  const input = $('chat-input');
+  const content = input.value.trim();
+  if (!content) return;
+  setInputLocked(true); input.value = ''; input.style.height = 'auto';
+  try {
+    const r = await fetch(POST, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({content}) });
+    const d = await r.json();
+    if (!d.ok) setInputLocked(false);
+    await refresh();
+  } catch(e) { setInputLocked(false); }
+}
+
+// ─ Modals ────────────────────────────────────────────────
+function openModal(name) {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+  $('modal-' + name).classList.add('open');
+  if (name === 'load') loadSavesList();
+  if (name === 'newgame') { loadWorldPresets(); wizardStep = 0; showWizardStep(0); }
+}
+function closeModal(name) { $('modal-' + name).classList.remove('open'); }
+
+// ─ Save modal ────────────────────────────────────────────
+async function submitSave() {
+  const name = $('save-name-input').value.trim().replace(/[^a-z0-9\-_]/gi,'_') || 'quicksave';
+  await apiPost('send-command', {command: '/save-game ' + name});
+  closeModal('save'); $('save-name-input').value = '';
+}
+
+// ─ Load modal ────────────────────────────────────────────
+async function loadSavesList() {
+  $('save-list').innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Loading…</div>';
+  selectedSave = null; $('load-confirm-btn').disabled = true;
+  try {
+    const data = await fetchJ(API + '?action=list-saves');
+    const saves = data.saves || [];
+    if (!saves.length) { $('save-list').innerHTML = '<div class="empty-state">No saves found.</div>'; return; }
+    $('save-list').innerHTML = saves.map(s =>
+      '<div class="save-item" data-path="' + s.path + '" onclick="selectSave(this,\'' + s.path + '\')">' +
+      '<div class="save-item-name">' + s.game + ' / ' + s.slot + '</div>' +
+      '<div class="save-item-meta">' + s.preview + '</div>' +
+      '</div>'
+    ).join('');
+  } catch(e) { $('save-list').innerHTML = '<div class="empty-state">Failed to load saves.</div>'; }
+}
+function selectSave(el, path) {
+  document.querySelectorAll('.save-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected'); selectedSave = path; $('load-confirm-btn').disabled = false;
+}
+async function submitLoad() {
+  if (!selectedSave) return;
+  await apiPost('send-command', {command: '/load-game ' + selectedSave});
+  closeModal('load');
+}
+
+// ─ New Game modal wizard ──────────────────────────────────
+let worldPresets = [];
+async function loadWorldPresets() {
+  try {
+    const data = await fetchJ(API + '?action=list-worlds');
+    worldPresets = data.worlds || [];
+    $('world-preset-select').innerHTML = worldPresets.map(w =>
+      '<option value="' + w.name + '">' + w.name + ' — ' + w.description + '</option>'
+    ).join('');
+  } catch(e) {}
+}
+function onWorldChoiceChange(radio) {
+  document.querySelectorAll('[name="world-choice"]').forEach(r => r.closest('.radio-opt').classList.toggle('selected', r.checked));
+  const isNew = radio.value === 'new';
+  $('world-preset-fields').style.display = isNew ? 'none' : '';
+  $('world-create-fields').classList.toggle('show', isNew);
+}
+function radioStyle(radio) {
+  const group = radio.closest('.radio-group');
+  if (group) group.querySelectorAll('.radio-opt').forEach(o => o.classList.toggle('selected', o.querySelector('input').checked));
+}
+function showWizardStep(n) {
+  wizardStep = n;
+  document.querySelectorAll('.wizard-step').forEach((s,i) => s.classList.toggle('active', i === n));
+  document.querySelectorAll('.wdot').forEach((d,i) => d.classList.toggle('active', i === n));
+  if (n === 2) buildNewGameSummary();
+}
+function wizardNext() { if (wizardStep < 2) showWizardStep(wizardStep + 1); }
+function wizardBack() { if (wizardStep > 0) showWizardStep(wizardStep - 1); }
+function buildNewGameSummary() {
+  const worldChoice = document.querySelector('[name="world-choice"]:checked').value;
+  const genMode     = document.querySelector('[name="gen-mode"]:checked') ? document.querySelector('[name="gen-mode"]:checked').value : 'questions';
+  const charMode    = document.querySelector('[name="char-mode"]:checked').value;
+  let worldDesc = worldChoice === 'existing'
+    ? 'World: <strong>' + ($('world-preset-select').value || 'earth-invasion') + '</strong>'
+    : 'World: <strong>New — ' + ($('world-summary-input').value.substring(0,80) || '(no description)') + '…</strong>';
+  $('newgame-summary').innerHTML = worldDesc + '<br>' +
+    'Generation mode: <strong>' + (worldChoice === 'existing' ? 'use preset' : genMode) + '</strong><br>' +
+    'Character: <strong>' + (charMode === 'manual' ? 'set up in chat' : 'auto-generate') + '</strong>';
+}
+async function submitNewGame() {
+  const worldChoice = document.querySelector('[name="world-choice"]:checked').value;
+  const genMode     = document.querySelector('[name="gen-mode"]:checked') ? document.querySelector('[name="gen-mode"]:checked').value : 'questions';
+  const charMode    = document.querySelector('[name="char-mode"]:checked').value;
+  let cmd = '/new-game\n';
+  if (worldChoice === 'existing') {
+    cmd += 'WORLD_PRESET: ' + ($('world-preset-select').value || 'earth-invasion') + '\n';
+  } else {
+    cmd += 'WORLD_SUMMARY: ' + $('world-summary-input').value + '\n';
+    cmd += 'WORLD_MODE: ' + genMode + '\n';
+  }
+  cmd += 'CHARACTER_MODE: ' + charMode;
+  await apiPost('send-command', {command: cmd});
+  closeModal('newgame');
+}
+
+// ─ Key events & listeners ─────────────────────────────────
+$('send-btn').addEventListener('click', sendMessage);
+$('chat-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+$('chat-input').addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 110) + 'px'; });
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+// ─ Boot ───────────────────────────────────────────────────
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

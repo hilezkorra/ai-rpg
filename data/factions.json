@@ -1,0 +1,28 @@
+{
+  "factions": [
+    {
+      "name": "Surviving Humans",
+      "status": "Scattered, leaderless. ~2% of pre-invasion population.",
+      "relationship_to_player": "Unknown",
+      "notes": "Berlin cell forming. Other resistance nodes in São Paulo, Seoul."
+    },
+    {
+      "name": "The Vorath",
+      "status": "Active occupation. Harvester ships in orbit. Taker drones in cities.",
+      "relationship_to_player": "Hostile (cataloging — not yet targeted directly)",
+      "notes": "Resource harvesters. Hivemind. Internal split between Cultivators and Purge Faction."
+    },
+    {
+      "name": "The Shriven",
+      "status": "Active research. Node clusters in orbit. Contact attempts beginning.",
+      "relationship_to_player": "Unknown (may approach for 'interview')",
+      "notes": "Digital entities. Obsessed with the System. Non-violent unless threatened."
+    },
+    {
+      "name": "The Pale Court",
+      "status": "Observing. Suspected defector on surface. Holding arrangement with Vorath.",
+      "relationship_to_player": "Unknown (monitoring from distance)",
+      "notes": "Ancient civilization. Architects of the System. Bound by non-intervention compact."
+    }
+  ]
+}

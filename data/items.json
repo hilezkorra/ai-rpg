@@ -1,6 +1,6 @@
 {
-  "carry_weight_formula": "max_kg = 10 + (strength * 4)",
-  "carry_weight_notes": "Average human (STR 5) carries 30kg comfortably. Each STR point above/below shifts by 4kg. Overencumbered at 90%+, immobilised at 120%.",
+  "carry_weight_formula": "sprint_free_kg = STR * 2 | walk_limit_kg = STR * 6 | abs_max_kg = STR * 9",
+  "carry_weight_notes": "Average human (STR 5): sprint free up to 10kg, comfortable walking up to 30kg, absolute max 45kg. STR scales all thresholds linearly. Having a backpack is assumed for walk/max limits.",
   "items": [
     {
       "name": "Work Backpack",
@@ -230,8 +230,8 @@
       "match": "vodka",
       "type": "Weapon (Craftable)",
       "rarity": "Uncommon",
-      "description": "Two 70cl bottles of 40% vodka, a lighter, and a cloth rag. Two Molotov cocktails ready to assemble in 30 seconds. John has read enough to know exactly what to do with these.",
-      "weight": 0.8,
+      "description": "2x 70cl bottles of 40% vodka. Each bottle ~700g. Lighter and rag are separate items.",
+      "weight": 1.4,
       "attack_power": 40,
       "attack_speed": "Slow (thrown)",
       "damage_type": "Fire — area",
@@ -239,7 +239,7 @@
       "two_handed": false,
       "durability": "Single use per bottle",
       "special": "Area fire on impact (~3m radius). Burn damage on anything in range. Fire persists ~20 seconds. Cannot be un-thrown.",
-      "notes": "x2 available. Will attract attention from any nearby entity. Highly effective in enclosed spaces or against groups."
+      "notes": "x2 Molotovs available. Assemble in ~30 seconds: rag in neck, light, throw. Weight is for both bottles only."
     },
     {
       "name": "CO2 Fire Extinguisher",
@@ -247,7 +247,7 @@
       "type": "Weapon / Utility",
       "rarity": "Common",
       "description": "A CO2 extinguisher from the supermarket wall mount. Heavy steel cylinder. The discharge blinds and disorients at close range. The cylinder itself is a blunt weapon.",
-      "weight": 2.0,
+      "weight": 2,
       "attack_power": 16,
       "attack_speed": "Slow",
       "damage_type": "Blunt / Cold (discharge)",

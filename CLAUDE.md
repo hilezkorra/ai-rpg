@@ -69,7 +69,7 @@ Update if any of these changed:
 - `carry_weight.current` — **recalculate from scratch every turn using item weights from `data/items.json`**
   - Formula: sum the `weight` field of every item currently in inventory
   - Max carry for display: `STR × 6` kg (sprint free ≤ `STR × 2` kg, abs max `STR × 9` kg)
-- `demon.influence` / `demon.status` / `demon.relationship`
+- `companion.influence` / `companion.status` / `companion.relationship`
 
 ### 3. INVENTORY FILE — `characters/john-doe/inventory.md`
 - Full item list with worn/carried split
@@ -84,7 +84,7 @@ Update if any of these changed:
 ### 6. ACTION LOG — `characters/john-doe/action-log.md`
 - Append timestamped entry: what happened, decisions made, outcomes
 
-### 7. DEMON FILE — `characters/john-doe/demon.md`
+### 7. COMPANION FILE — `characters/john-doe/companion.md`
 - Update if influence changed, demon spoke, or relationship shifted
 
 ### 8. RELATIONSHIPS — `characters/john-doe/relationships.md`

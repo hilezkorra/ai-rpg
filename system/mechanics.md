@@ -30,7 +30,7 @@ Effects:
 
 ---
 
-## DEMON SYSTEM
+## COMPANION SYSTEM (INNER DEMON)
 
 - Exists in mental world
 - Appears after first death
@@ -44,7 +44,7 @@ Behavior:
 
 ---
 
-## TAKEOVER
+## COMPANION TAKEOVER
 
 At 100 mental strain:
 - Player loses control
@@ -52,7 +52,7 @@ At 100 mental strain:
 - Unique transformation
 
 To recover:
-- Must defeat demon in mental world
+- Must defeat companion/demon in mental world
 
 ---
 

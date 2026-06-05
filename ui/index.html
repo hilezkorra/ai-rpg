@@ -275,7 +275,7 @@
       <!-- STATS TAB -->
       <div class="tab-pane active" id="tab-stats">
         <div class="panel"><div class="panel-title">Character</div><div id="char-body"><div style="color:var(--muted);font-size:12px">Loading…</div></div></div>
-        <div class="panel" id="panel-companion"><div class="panel-title" id="companion-panel-title">Companion</div><div id="demon-body"><div style="color:var(--muted);font-size:12px">Loading…</div></div></div>
+        <div class="panel" id="panel-companion"><div class="panel-title" id="companion-panel-title">Companion</div><div id="companion-body"><div style="color:var(--muted);font-size:12px">Loading…</div></div></div>
         <div class="panel"><div class="panel-title">World State</div><div id="world-body"><div style="color:var(--muted);font-size:12px">Loading…</div></div></div>
         <div class="panel"><div class="panel-title">Inventory</div><div id="inv-body"><div style="color:var(--muted);font-size:12px">Loading…</div></div></div>
       </div>
@@ -553,19 +553,22 @@ function renderChar(c) {
     '<div class="stat-box"><span class="sn">INT</span><span class="sv">' + c.stats.intelligence + '</span></div>' +
     '</div><div style="margin-top:8px"><div class="tags">' + efx + '</div></div>';
 }
-function renderDemon(c, w) {
-  const cs = (w && w.companion_system) || { type: 'demon', label: 'Demon' };
+function renderCompanion(c, w) {
+  // companion_system (world.json) = world-level config: what TYPE of companion this world uses
+  // c.companion (character.json) = the actual companion state (type + status + influence + relationship)
+  // In the Earth Invasion world, companion type = inner demon. They are the same feature.
+  const cs = (w && w.companion_system) || { type: 'demon', label: 'Companion' };
   const panel = $('panel-companion');
   if (cs.type === 'none') { if (panel) panel.style.display = 'none'; return; }
   if (panel) panel.style.display = '';
   const title = $('companion-panel-title');
   if (title) title.textContent = cs.label || 'Companion';
-  const d = c.demon;
+  const d = c.companion || c.demon || { status: 'Dormant', influence: 0, relationship: 'Not yet formed' };
   const iPct = Math.max(0, Math.min(100, d.influence));
   const dormantLabel = cs.type === 'demon' ? 'Dormant' : cs.type === 'spirit' ? 'Unbound' : 'Inactive';
   const icons = { demon: '👁', spirit: '✦', guide: '◈', default: '◉' };
   const icon = icons[cs.type] || icons.default;
-  $('demon-body').innerHTML =
+  $('companion-body').innerHTML =
     '<div class="demon-row">' +
     '<div class="demon-orb ' + (d.status !== dormantLabel && d.status !== 'Dormant' ? 'active' : '') + '">' + icon + '</div>' +
     '<div class="demon-info"><div class="dn">' + d.status + '</div><div class="dr">' + d.relationship + '</div></div>' +
@@ -869,7 +872,7 @@ async function refresh() {
       fetchJ(BASE + 'items.json').catch(() => ({items:[]})),
     ]);
     itemsDefs = (itemsData && itemsData.items) || [];
-    renderChar(char); renderDemon(char, world); renderInv(char); renderWorld(world); renderEvents(events);
+    renderChar(char); renderCompanion(char, world); renderInv(char); renderWorld(world); renderEvents(events);
     loreCache = lore; renderLoreFromCache(); renderNPCs(npcs); renderQuests(quests);
     if (chatSessionId && chat.session_id !== chatSessionId) { lastMsgCount = 0; lastStatus = null; isAnimating = false; hasRenderedOnce = false; }
     chatSessionId = chat.session_id;

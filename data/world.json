@@ -16,7 +16,7 @@
   "companion_system": {
     "type": "demon",
     "label": "Demon",
-    "description": "An inner demon that manifests after the player's first death. Born from their fears and failures. Not purely evil — it judges, teaches, and fights for dominance.",
+    "description": "The companion in this world is the Inner Demon — a fragment of the player's own psyche, manifesting after their first death. The Inner Demon and the companion system are the same feature. Born from fears and failures. Not purely evil — it judges, teaches, and fights for dominance.",
     "manifests": "on_first_death"
   }
 }

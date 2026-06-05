@@ -50,7 +50,7 @@ DO NOT read entire logs unless needed.
 ## PLAYER SYSTEM
 
 - Player has stats, skills, inventory
-- Player has a demon (curse system)
+- Player has a companion / inner demon (curse system)
 - Player rewinds 24h on death (hidden limit)
 - Mental state affects outcomes
 

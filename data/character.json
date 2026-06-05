@@ -53,11 +53,12 @@
     "city": "Leipzig",
     "place": "Plagwitzer Straße — church tower, top"
   },
-  "demon": {
+  "abilities": [],
+  "class": "Unclassified",
+  "companion": {
+    "type": "demon",
     "status": "Dormant",
     "influence": 0,
     "relationship": "Not yet formed"
-  },
-  "abilities": [],
-  "class": "Unclassified"
+  }
 }

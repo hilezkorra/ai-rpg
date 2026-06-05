@@ -1,26 +1,58 @@
 {
-  "name": "Unknown",
+  "name": "John Doe",
   "level": 1,
   "xp": 0,
   "rank": "F",
   "hp": 100,
   "hp_max": 100,
   "stats": {
-    "strength": 10,
-    "agility": 10,
-    "endurance": 10,
-    "intelligence": 10
+    "strength": 6,
+    "agility": 8,
+    "endurance": 6,
+    "intelligence": 6
   },
   "mental_state": {
-    "value": 0,
+    "value": 15,
     "status": "Stable"
   },
-  "status_effects": [],
-  "inventory": [],
+  "status_effects": [
+    "Chronic injury (knee/hip/ankle) — braced and taped, manageable"
+  ],
+  "carry_weight": {
+    "current": 15.9,
+    "max": 34
+  },
+  "inventory": [
+    "Work backpack (packed)",
+    "2x sports bottle 1.5L (full)",
+    "Protein bars x3",
+    "Energy gels (handful)",
+    "Mixed nuts (bag)",
+    "Tins of sardines x2",
+    "Tins of chickpeas x2",
+    "Peanut butter (jar)",
+    "Ibuprofen",
+    "Basic first aid kit",
+    "Sports tape x2 rolls",
+    "Laptop + battery bank (60%)",
+    "Kitchen knife (original)",
+    "Chef's knife (heavy, good steel)",
+    "Meat cleaver",
+    "Aluminium mop handle (staff)",
+    "Bone saw (butcher's, serrated)",
+    "Vodka 40% x2 (70cl) — Molotov components",
+    "Lighter",
+    "Cloth rag",
+    "CO2 fire extinguisher",
+    "Phone (dead)",
+    "Apartment keys",
+    "Spare hoodie (wearing)",
+    "Knee brace (wearing)"
+  ],
   "location": {
     "world": "Earth",
-    "city": "Unknown",
-    "place": "Unknown"
+    "city": "Leipzig",
+    "place": "Plagwitzer Straße — church tower, top"
   },
   "demon": {
     "status": "Dormant",

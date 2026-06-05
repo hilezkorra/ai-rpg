@@ -199,6 +199,35 @@
     .world-create-fields.show{display:flex}
     /* ─ Global code tag ─ */
     code{background:#1a1d28;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;color:var(--accent)}
+    /* ─ Item cards ─ */
+    .inv-item{cursor:pointer;transition:border-color .15s,color .15s}
+    .inv-item:hover{border-color:var(--accent2);color:var(--accent2)}
+    .item-card-name{font-size:17px;font-weight:700;margin-bottom:3px}
+    .item-card-meta{font-size:11px;color:var(--muted);margin-bottom:10px}
+    .item-rarity{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:12px;border:1px solid;display:inline-block;margin-right:6px}
+    .rarity-common{color:#6c7086;border-color:#6c7086}
+    .rarity-uncommon{color:var(--accent);border-color:var(--accent)}
+    .rarity-rare{color:#5b8fff;border-color:#5b8fff}
+    .rarity-epic{color:var(--accent2);border-color:var(--accent2)}
+    .rarity-legendary{color:var(--warn);border-color:var(--warn)}
+    .rarity-unique{color:var(--danger);border-color:var(--danger)}
+    .item-card-desc{font-size:12px;color:var(--text);line-height:1.65;padding:10px;background:var(--bg);border-radius:6px;border-left:2px solid var(--border2);margin:10px 0}
+    .item-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+    .item-stat{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 9px}
+    .item-stat .isl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+    .item-stat .isv{font-size:12px;font-weight:700;line-height:1.4}
+    .item-special{font-size:11px;color:var(--warn);background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:6px;padding:8px 10px;margin-bottom:10px;line-height:1.55}
+    .item-notes-box{font-size:11px;color:var(--muted);font-style:italic;line-height:1.5;padding:6px 0;border-top:1px solid var(--border)}
+    /* ─ Carry weight ─ */
+    .carry-section{margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+    .carry-label{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;margin-bottom:4px}
+    .carry-label .cl{color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .carry-label .cv{font-weight:700;font-size:12px}
+    .carry-bar-wrap{position:relative}
+    .carry-sprint-mark{position:absolute;top:-1px;bottom:-1px;width:2px;background:rgba(255,255,255,.25);border-radius:1px;pointer-events:none}
+    .carry-meta{display:flex;justify-content:space-between;font-size:10px;margin-top:4px}
+    .carry-tier{font-weight:700}
+    .carry-penalty{color:var(--muted);font-style:italic;text-align:right}
     /* ─ Typewriter ─ */
     .tw-cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:1px;vertical-align:text-bottom;animation:twblink .55s ease-in-out infinite}
     @keyframes twblink{0%,100%{opacity:1}50%{opacity:0}}
@@ -418,6 +447,16 @@
     </div>
   </div>
 </div>
+<!-- ── ITEM CARD MODAL ── -->
+<div class="modal-overlay" id="modal-item">
+  <div class="modal-box" style="max-width:420px">
+    <div id="item-card-content"></div>
+    <div class="modal-actions" style="margin-top:10px">
+      <button class="btn btn-ghost" onclick="closeModal('item')">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const BASE = '../data/';
 const API  = '../game-api.php';
@@ -427,6 +466,7 @@ const POST = '../post-message.php';
 let lastMsgCount = 0, lastStatus = null, chatSessionId = null, typingEl = null;
 let activeFilter = 'all', openLoreId = null, selectedSave = null, wizardStep = 0;
 let isAnimating = false, hasRenderedOnce = false, voiceEnabled = false;
+let itemsDefs = [];
 
 // ─ Helpers ───────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -456,6 +496,32 @@ function switchTab(name) {
   if (pane) pane.classList.add('active');
 }
 
+// ─ Carry weight helper ───────────────────────────────────
+function carryInfo(c) {
+  const str = (c.stats && c.stats.strength) || 5;
+  // Sprint limit: STR × 2  (avg STR5 = 10 kg — sprint penalty above this)
+  // Walk limit:  STR × 6  (avg STR5 = 30 kg — comfortable all-day with backpack)
+  // Abs max:     STR × 9  (avg STR5 = 45 kg — barely mobile)
+  const sprintLimit = str * 2;
+  const walkLimit   = str * 6;
+  const absMax      = str * 9;
+  const cur = (c.carry_weight && c.carry_weight.current != null) ? c.carry_weight.current : null;
+
+  let tier, tierCol, penalty;
+  if (cur === null)         { tier = '—';             tierCol = 'var(--muted)';   penalty = ''; }
+  else if (cur <= sprintLimit) { tier = 'Combat Ready'; tierCol = 'var(--accent)';  penalty = 'No speed penalty'; }
+  else if (cur <= walkLimit)   { tier = 'Loaded';       tierCol = 'var(--warn)';    penalty = 'Sprint costs ×2 END'; }
+  else if (cur <= absMax)      { tier = 'Heavy';        tierCol = 'var(--danger)';  penalty = '−20% speed · no sprint · END drains'; }
+  else                         { tier = 'Immobilised';  tierCol = 'var(--danger)';  penalty = 'Cannot move at combat speed'; }
+
+  // Percentage against walkLimit (most practical limit for display)
+  const pct = cur !== null ? Math.min(100, (cur / walkLimit) * 100) : 0;
+  // Sprint marker position on bar (sprintLimit / walkLimit × 100)
+  const sprintMarkPct = Math.min(100, (sprintLimit / walkLimit) * 100);
+
+  return { cur, sprintLimit, walkLimit, absMax, tier, tierCol, penalty, pct, sprintMarkPct, str };
+}
+
 // ─ HUD Renders ───────────────────────────────────────────
 function renderChar(c) {
   const hpPct = Math.max(0, Math.min(100, (c.hp / c.hp_max) * 100));
@@ -464,13 +530,22 @@ function renderChar(c) {
   const efx   = (c.status_effects||[]).length
     ? c.status_effects.map(e => '<span class="tag warn">' + e + '</span>').join('')
     : '<span class="tag neutral">None</span>';
+  const cw = carryInfo(c);
+  const cwBar = cw.cur !== null
+    ? '<div class="bar-label"><span>Load</span><span style="color:' + cw.tierCol + '">' + cw.cur.toFixed(1) + ' kg / ' + cw.walkLimit + ' kg &nbsp;— ' + cw.tier + '</span></div>' +
+      '<div class="carry-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:' + cw.pct + '%;background:' + cw.tierCol + '"></div></div>' +
+      '<div class="carry-sprint-mark" style="left:' + cw.sprintMarkPct + '%"></div></div>' +
+      '<div style="font-size:10px;color:var(--muted);margin-top:2px">Sprint free ≤ ' + cw.sprintLimit + ' kg &nbsp;·&nbsp; ' + (cw.penalty || 'No penalties') + '</div>'
+    : '';
   $('char-body').innerHTML =
     '<div class="char-name">' + c.name + '</div>' +
-    '<div class="char-meta">Lv ' + c.level + ' &nbsp;·&nbsp; ' + c.xp + ' XP &nbsp;·&nbsp; ' + c.location.city + ', ' + c.location.place + '</div>' +
+    '<div class="char-meta">Lv ' + c.level + ' &nbsp;·&nbsp; Rank ' + (c.rank||'F') + ' &nbsp;·&nbsp; ' + c.xp + ' XP</div>' +
+    '<div class="char-meta" style="margin-top:2px;font-size:10px">' + c.location.city + ' · ' + c.location.place + '</div>' +
     '<div class="bar-label"><span>HP</span><span>' + c.hp + ' / ' + c.hp_max + '</span></div>' +
     '<div class="bar-track"><div class="bar-fill hp" style="width:' + hpPct + '%"></div></div>' +
     '<div class="bar-label"><span>Mental</span><span style="color:' + mCol + '">' + c.mental_state.value + '/100 — ' + mentalLabel(c.mental_state.value) + '</span></div>' +
     '<div class="bar-track"><div class="bar-fill" style="width:' + mPct + '%;background:' + mCol + '"></div></div>' +
+    cwBar +
     '<div class="stats-grid">' +
     '<div class="stat-box"><span class="sn">STR</span><span class="sv">' + c.stats.strength + '</span></div>' +
     '<div class="stat-box"><span class="sn">AGI</span><span class="sv">' + c.stats.agility + '</span></div>' +
@@ -513,9 +588,77 @@ function renderWorld(w) {
 }
 function renderInv(c) {
   const items = c.inventory || [];
-  $('inv-body').innerHTML = items.length
-    ? '<div class="inv-grid">' + items.map(i => '<div class="inv-item">' + i + '</div>').join('') + '</div>'
+  const cw = carryInfo(c);
+
+  let html = items.length
+    ? '<div class="inv-grid">' + items.map(name => {
+        const def = findItem(name);
+        const isWeapon = def && (def.type === 'Weapon' || (def.type || '').startsWith('Weapon'));
+        const border = isWeapon ? ' style="border-color:#ff4f6a55"' : '';
+        const safe = name.replace(/"/g, '&quot;');
+        return '<div class="inv-item"' + border + ' data-item="' + safe + '" onclick="showItemCard(this.dataset.item)" title="Click for details">' + name + '</div>';
+      }).join('') + '</div>'
     : '<div style="color:var(--muted);font-size:12px">Empty</div>';
+
+  if (cw.cur !== null) {
+    html += '<div class="carry-section">';
+    html += '<div class="carry-label"><span class="cl">Total Weight</span><span class="cv" style="color:' + cw.tierCol + '">' + cw.cur.toFixed(1) + ' kg / ' + cw.walkLimit + ' kg</span></div>';
+    html += '<div class="carry-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:' + cw.pct + '%;background:' + cw.tierCol + '"></div></div>';
+    html += '<div class="carry-sprint-mark" style="left:' + cw.sprintMarkPct + '%"></div></div>';
+    html += '<div class="carry-meta"><span class="carry-tier" style="color:' + cw.tierCol + '">' + cw.tier + '</span><span class="carry-penalty">' + cw.penalty + '</span></div>';
+    html += '<div style="font-size:10px;color:var(--muted);margin-top:3px">Sprint free ≤ ' + cw.sprintLimit + ' kg &nbsp;·&nbsp; Max moveable ' + cw.absMax + ' kg &nbsp;·&nbsp; STR ' + cw.str + '</div>';
+    html += '</div>';
+  }
+
+  $('inv-body').innerHTML = html;
+}
+
+function findItem(name) {
+  if (!itemsDefs.length) return null;
+  const n = name.toLowerCase();
+  return itemsDefs.find(d => n.includes(d.match.toLowerCase())) || null;
+}
+
+function showItemCard(name) {
+  const def = findItem(name);
+  let html = '';
+  if (!def) {
+    html = '<div class="item-card-name">' + name + '</div>';
+    html += '<div class="item-card-meta">No data on file</div>';
+    html += '<div class="item-notes-box">This item has not been catalogued yet.</div>';
+  } else {
+    const rc = 'rarity-' + (def.rarity || 'Common').toLowerCase();
+    html += '<div class="item-card-name">' + def.name + '</div>';
+    html += '<div style="margin-bottom:10px">';
+    html += '<span class="item-rarity ' + rc + '">' + (def.rarity || 'Common') + '</span>';
+    html += '<span style="font-size:11px;color:var(--muted)">' + (def.type || '') + '</span>';
+    html += '</div>';
+    html += '<div class="item-card-desc">' + def.description + '</div>';
+
+    // Build stat pairs
+    const stats = [];
+    if (def.weight !== undefined && def.weight !== null) stats.push(['Weight', def.weight + ' kg']);
+    if (def.attack_power)   stats.push(['Attack Power', def.attack_power]);
+    if (def.attack_speed)   stats.push(['Attack Speed', def.attack_speed]);
+    if (def.damage_type)    stats.push(['Damage Type', def.damage_type]);
+    if (def.range)          stats.push(['Range', def.range]);
+    if (def.two_handed !== undefined && def.two_handed !== null) stats.push(['Grip', def.two_handed ? 'Two-handed' : 'One-handed']);
+    if (def.durability)     stats.push(['Durability', def.durability]);
+    if (def.uses)           stats.push(['Uses', def.uses]);
+    if (def.capacity_kg)    stats.push(['Capacity', def.capacity_kg + ' kg']);
+    if (def.effect)         stats.push(['Effect', def.effect]);
+
+    if (stats.length) {
+      html += '<div class="item-stat-grid">' + stats.map(([l,v]) =>
+        '<div class="item-stat"><div class="isl">' + l + '</div><div class="isv">' + v + '</div></div>'
+      ).join('') + '</div>';
+    }
+
+    if (def.special) html += '<div class="item-special">⚡ <strong>Special:</strong> ' + def.special + '</div>';
+    if (def.notes)   html += '<div class="item-notes-box">' + def.notes + '</div>';
+  }
+  $('item-card-content').innerHTML = html;
+  openModal('item');
 }
 function renderEvents(e) {
   const evs = (e.recent_events||[]).slice(-10).reverse();
@@ -719,11 +862,13 @@ function setGMStatus(online) { const b = $('gm-status'); b.textContent = online 
 // ─ Main refresh ──────────────────────────────────────────
 async function refresh() {
   try {
-    const [char, world, events, chat, npcs, lore, quests] = await Promise.all([
+    const [char, world, events, chat, npcs, lore, quests, itemsData] = await Promise.all([
       fetchJ(BASE + 'character.json'), fetchJ(BASE + 'world.json'),
       fetchJ(BASE + 'events.json'), fetchJ(BASE + 'chat.json'),
       fetchJ(BASE + 'npcs.json'), fetchJ(BASE + 'lore.json'), fetchJ(BASE + 'quests.json'),
+      fetchJ(BASE + 'items.json').catch(() => ({items:[]})),
     ]);
+    itemsDefs = (itemsData && itemsData.items) || [];
     renderChar(char); renderDemon(char, world); renderInv(char); renderWorld(world); renderEvents(events);
     loreCache = lore; renderLoreFromCache(); renderNPCs(npcs); renderQuests(quests);
     if (chatSessionId && chat.session_id !== chatSessionId) { lastMsgCount = 0; lastStatus = null; isAnimating = false; hasRenderedOnce = false; }

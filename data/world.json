@@ -1,13 +1,15 @@
 {
   "day": 1,
-  "global_state": "Earth under alien invasion. 98% of humanity vanished into tutorial space. Streets empty. No communications. Alien structures visible over major cities.",
+  "global_state": "Earth under alien invasion. 98% of humanity vanished into tutorial space at dawn. Streets empty. Alien ships in low orbit over all major cities. Taker drones deploying into urban centers. System active — F-rank awakenings ongoing.",
   "active_threats": [
-    "Unknown alien faction — ship visible over Leipzig west district",
-    "Total civilian disappearance — cause unknown"
+    "Alien ship in low orbit over Lindenauer Hafen, Leipzig",
+    "Taker drones — cataloging urban centers, expanding outward"
   ],
   "factions": [
-    "Humans (fragmented)",
-    "Unknown Alien Faction"
+    "Humans (fragmented — 2% remaining)",
+    "The Vorath",
+    "The Shriven",
+    "The Pale Court"
   ],
   "top_humans": [],
   "top_factions": [],

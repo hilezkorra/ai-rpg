@@ -4,85 +4,43 @@
       "id": "lore_001",
       "title": "The System",
       "category": "System",
-      "content": "A floating interface visible only to you. Stat windows, ability prompts, level notifications. You thought it was a hallucination after the Silence. It isn't. The System is real, it's been here longer than the invasion, and it's doing something far more complex than a tutorial.",
+      "content": "A floating interface visible only to you. Stat windows, rank notifications, resonance analysis. It appeared this morning in the vision of every surviving human simultaneously. Most interpret it as shock or hallucination. It isn't. The System is real, and it has been here longer than the invasion.",
       "discovered": true
     },
     {
       "id": "lore_002",
       "title": "The Tutorial",
       "category": "System",
-      "content": "98% of humanity vanished into what the System calls an accelerated integration protocol. They're not dead — the System would classify them as dead if they were. They're somewhere else. Whether what's happening to them there is what the System says it is... that's a different question.",
+      "content": "98% of humanity vanished into what the System calls an active integration state. They are not dead — the System would classify them differently if they were. They are somewhere else. The System calls it a tutorial. Whether what is happening to them there is actually a tutorial is a different question.",
       "discovered": true
     },
     {
       "id": "lore_003",
       "title": "The Invasion",
       "category": "World",
-      "content": "Day 0. Hour 0: communications die. Hour 1: 98% of people disappear. Hour 6: ships appear in low orbit. They haven't attacked. They've been cataloging. Assessing. Like they're taking inventory of something they already own.",
+      "content": "Dawn: communications die. Seventeen minutes later: 98% of people simply complete — a soft white light, and then absence. An hour after that: the System activates. Six hours after that: ships appear in low orbit over every major city. They have not attacked. They are cataloging.",
       "discovered": true
     },
     {
       "id": "lore_004",
       "title": "The 2%",
       "category": "World",
-      "content": "You're one of them. The ones left behind when everyone else was pulled. No one knows why you're still here — rejected, chosen, or something else. The System doesn't explain. The aliens don't care. You're an anomaly in an experiment you never agreed to be part of.",
+      "content": "You are one of the ones the tutorial did not take. Three others are in your district. Nobody knows why some people were left behind — rejected, chosen, or something the System has not named yet. The ships treat you as anomalies. That is not necessarily better than being ignored.",
       "discovered": true
     },
     {
       "id": "lore_005",
-      "title": "The Vorath",
-      "category": "Factions",
-      "content": "Silicon-carbon hivemind. Six-limbed. Their ships are alive — grown, not built. They don't attack you on sight because you're not worth attacking yet. Their drones catalog the city. Taking samples. Making assessments. When they're done assessing, they'll decide what to do with what they found.",
-      "discovered": false
+      "title": "The Ship",
+      "category": "World",
+      "content": "The ship above Leipzig looks grown rather than built — organic, asymmetric, dark, textured like the outside of a seed pod. Roughly 200 metres long. It hasn't moved. It deploys small human-sized entities that move toward the city centre in systematic patterns. It is not attacking. It is assessing. Something is being decided and you are not part of that conversation.",
+      "discovered": true
     },
     {
       "id": "lore_006",
-      "title": "The Shriven",
-      "category": "Factions",
-      "content": "They gave up their bodies centuries ago. Now they exist as black glass spheres that float and project holograms. They arrived after the Vorath, drawn here by the System's signal. They want to interview you. They don't use weapons. That doesn't mean they're safe.",
-      "discovered": false
-    },
-    {
-      "id": "lore_007",
-      "title": "The Pale Court",
-      "category": "Factions",
-      "content": "Ancient beyond any number that means anything. They built the System — or found it, depending on who you believe. They have a compact: they don't intervene. They only watch. Rumor has it one of them broke that compact. They're here, somewhere, wearing something close to human.",
-      "discovered": false
-    },
-    {
-      "id": "lore_008",
-      "title": "System Ranks",
-      "category": "System",
-      "content": "F to E to D to C to B to A to S and beyond. The gap between each rank isn't linear — it's a jump. B-rank humans can fight alien drones. A-rank humans are visible from orbit. There are three ranks above S. The Pale Court records call the highest one something that doesn't translate.",
-      "discovered": false
-    },
-    {
-      "id": "lore_009",
-      "title": "The Inner Demon",
-      "category": "System",
-      "content": "The System builds something from you when you die. Takes your fears, your failures, the part of yourself you've never looked at directly — and makes it into a voice. Not evil. Not separate from you. Just the part of you that you've been pretending doesn't exist. It's been waiting.",
-      "discovered": false
-    },
-    {
-      "id": "lore_010",
-      "title": "Terminal Zero",
-      "category": "Mysteries",
-      "content": "One in five hundred people can see it — a System terminal that broadcasts in a language no one can read. Not encrypted. Not corrupted. Just in a language that predates every known civilization. It's been broadcasting since Day 0. Something is waiting for a reply.",
-      "discovered": false
-    },
-    {
-      "id": "lore_011",
-      "title": "The Chernobyl Anomaly",
-      "category": "Mysteries",
-      "content": "Both the Vorath and the Shriven avoid the Chernobyl Exclusion Zone entirely. No drones. No scouts. Complete avoidance. Neither has explained why. One survivor who approached the perimeter reported their System UI going blank for 40 seconds. They didn't go further.",
-      "discovered": false
-    },
-    {
-      "id": "lore_012",
-      "title": "Integration Payment",
-      "category": "System",
-      "content": "When you rank up, the System takes something. Not a memory exactly — more like a feeling. The emotional texture of something. Survivors describe it as losing a color. What's taken doesn't disappear. It goes somewhere. At high ranks, fragments that don't feel like your own start bleeding through.",
-      "discovered": false
+      "title": "The Catalogers",
+      "category": "World",
+      "content": "Small dark entities — roughly human-sized — detached from the ship and moved toward Leipzig city centre. Unhurried. Systematic. Spreading across different routes. They didn't come toward the residential areas. Whatever they are doing, they started with the centre.",
+      "discovered": true
     }
   ]
 }

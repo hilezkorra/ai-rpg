@@ -1,17 +1,31 @@
-﻿{
+{
   "active": [
     {
       "id": "q001",
       "title": "Survive Day One",
-      "description": "The world ended overnight. Most of humanity is gone. Understand what happened and stay alive long enough to find out what comes next.",
+      "description": "The world ended this morning. 98% of humanity is gone. The System is real. Something enormous is in the sky over your city. Figure out what happened and stay alive long enough for it to matter.",
       "objectives": [
-        "Understand the System",
-        "Find food and water",
-        "Determine if anyone else is nearby",
-        "Avoid alien contact until you are ready"
+        { "text": "Understand the System", "complete": false },
+        { "text": "Secure food and water", "complete": true },
+        { "text": "Leave shelter and get mobile", "complete": true },
+        { "text": "Arm yourself", "complete": true },
+        { "text": "Get a view of the situation", "complete": true },
+        { "text": "Find the other survivors in your district (2 remaining)", "complete": false },
+        { "text": "Avoid alien contact until you know what you are dealing with", "complete": false }
       ],
-      "status": "active",
-      "given_by": "System"
+      "given_by": "System",
+      "status": "active"
+    },
+    {
+      "id": "q002",
+      "title": "The Lit Window",
+      "description": "From the church tower you spotted warm lamp light in a flat on Josephinenstraße, 800m NE. Someone is in there. One of the other survivors in the district — or someone in a very bad situation.",
+      "objectives": [
+        { "text": "Reach Josephinenstraße", "complete": false },
+        { "text": "Make contact with whoever is in the flat", "complete": false }
+      ],
+      "given_by": "Discovered",
+      "status": "active"
     }
   ],
   "completed": []

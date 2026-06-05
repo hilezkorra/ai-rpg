@@ -1,3 +1,24 @@
 {
-  "recent_events": []
+  "recent_events": [
+    {
+      "time": "Day 1 — 06:53",
+      "event": "John woke to the Silence. System F-rank awakening complete. Alien ship over Lindenauer Hafen. 3 survivors confirmed in Leipzig district."
+    },
+    {
+      "time": "Day 1 — 06:55",
+      "event": "3 cataloger entities detached from ship, moved toward Leipzig city centre and Hauptbahnhof. Systematic. Did not approach residential areas."
+    },
+    {
+      "time": "Day 1 — 07:08",
+      "event": "John packed, braced knee, left flat. On Karl-Heine-Straße — city empty, tram stopped, car running with door open."
+    },
+    {
+      "time": "Day 1 — 07:12",
+      "event": "John looted Rewe on Industriestraße. Acquired food, weapons (chef's knife, cleaver, bone saw, mop handle staff), Molotov components, CO2 extinguisher."
+    },
+    {
+      "time": "Day 1 — 07:27",
+      "event": "John climbed church tower on Plagwitzer Straße. Catalogers spotted on Grimmaische Straße — past inner ring road, closer than expected. Lit window spotted at Josephinenstraße 800m NE — possible survivor."
+    }
+  ]
 }

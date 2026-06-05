@@ -1,3 +1,13 @@
-﻿{
-  "characters": []
+{
+  "characters": [
+    {
+      "name": "Unknown Survivor",
+      "role": "Possible survivor — Josephinenstraße",
+      "description": "Warm lamp light visible in 3rd floor left flat at Josephinenstraße, 800m NE of church tower. Light moving slightly — someone is in there. Identity and condition unknown.",
+      "relationship": "Unknown",
+      "last_seen": "Day 1 07:27 — lit window, Josephinenstraße, 3rd floor left",
+      "status": "Active — stationary in flat",
+      "notes": "One of the 2 other survivors in the district? Unconfirmed."
+    }
+  ]
 }
